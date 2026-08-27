@@ -42,6 +42,15 @@
         }
     }
 
+    # Let repeat visits reuse the entry page HTML for a short window instead
+    # of refetching it on every navigation. The window is short enough that
+    # config changes and new deployments are picked up quickly.
+    handle /login {
+        reverse_proxy http://localhost:{$HD_FRONTEND_PORT:3001} {
+            header_down Cache-Control "public, max-age=60"
+        }
+    }
+
     reverse_proxy /realtime http://localhost:{$HD_BACKEND_PORT:3000}
     reverse_proxy /api/* http://localhost:{$HD_BACKEND_PORT:3000}
     reverse_proxy /public/* http://localhost:{$HD_BACKEND_PORT:3000}

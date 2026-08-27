@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMotdContextValue } from '../../motd/motd-context'
 import { useLocalStorage } from 'react-use'
 import { MotdModal } from './motd-modal'
@@ -25,6 +25,12 @@ export const CachedMotdModal: React.FC = () => {
   })
 
   const [dismissed, setDismissed] = useState(false)
+
+  // The modal reads local storage, which only exists in the browser. Keeping
+  // it closed until after hydration keeps the server-rendered and the first
+  // client-rendered UI identical.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const show = useMemo(() => {
     const lastModified = contextValue?.lastModified
@@ -50,5 +56,5 @@ export const CachedMotdModal: React.FC = () => {
     return <span {...testId('loaded not visible')} />
   }
 
-  return <MotdModal show={show} onDismiss={doDismiss}></MotdModal>
+  return <MotdModal show={mounted && show} onDismiss={doDismiss}></MotdModal>
 }

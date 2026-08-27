@@ -4,37 +4,39 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 import { isDevMode } from '../../../utils/test-modes'
-import type { ResourceKey } from 'i18next'
 import i18n, { use as i18nUse } from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
-import resourcesToBackend from 'i18next-resources-to-backend'
 import { Settings } from 'luxon'
 import { initReactI18next } from 'react-i18next'
+import englishTranslation from '../../../../locales/en.json'
+
+// The translations are bundled and i18n is initialized when this module
+// loads, so server-side rendering and the first client paint can already
+// render translated text without waiting for an asynchronous setup task or
+// an extra network round trip.
+if (typeof window !== 'undefined') {
+  i18nUse(LanguageDetector)
+}
+const i18nInitialization = i18n.use(initReactI18next).init({
+  fallbackLng: 'en',
+  lng: typeof window === 'undefined' ? 'en' : undefined,
+  resources: {
+    en: {
+      translation: englishTranslation
+    }
+  },
+  initImmediate: false,
+  debug: isDevMode,
+  interpolation: {
+    escapeValue: false
+  }
+})
 
 /**
  * Set up the internationalisation framework i18n.
  */
 export const setUpI18n = async (): Promise<void> => {
-  await i18nUse(
-    resourcesToBackend((language, namespace, callback) => {
-      import(`../../../../locales/${language}.json`)
-        .then((resources: ResourceKey) => {
-          callback(null, resources)
-        })
-        .catch((error: Error) => {
-          callback(error, null)
-        })
-    })
-  )
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      fallbackLng: 'en',
-      debug: isDevMode,
-      interpolation: {
-        escapeValue: false
-      }
-    })
+  await i18nInitialization
 
   i18n.on('languageChanged', (language) => {
     Settings.defaultLocale = language

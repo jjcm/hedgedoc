@@ -58,7 +58,13 @@ const svgrConfig = {
 
 /** @type {import('next').NextConfig} */
 const rawNextConfig = {
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
+    // Merge small boot-time chunks: with many tiny chunks the request count
+    // and round trips dominate the load time on HTTP/1.1 connections.
+    if (!dev && !isServer && config.optimization && config.optimization.splitChunks) {
+      config.optimization.splitChunks.minSize = 48 * 1024
+      config.optimization.splitChunks.maxInitialRequests = 16
+    }
     config.module.rules.push({
       test: /\.svg$/i,
       issuer: /\.[jt]sx?$/,

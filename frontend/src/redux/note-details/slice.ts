@@ -5,6 +5,7 @@
  */
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+import { rootReducer } from '..'
 import { initialState } from './initial-state'
 import { buildStateFromServerInterface } from './reducers/build-state-from-set-note-data-from-server'
 import { buildStateFromUpdatedMarkdownContent } from './build-state-from-updated-markdown-content'
@@ -50,3 +51,7 @@ const noteDetailsSlice = createSlice({
 
 export const noteDetailsActionsCreator = noteDetailsSlice.actions
 export const noteDetailsReducer = noteDetailsSlice.reducer
+
+// The slice registers itself in the store when this module is imported, so
+// only the pages that actually use note details carry its code.
+rootReducer.inject(noteDetailsSlice)

@@ -55,4 +55,10 @@ fi
 
 rm -rf dist/frontend/src
 
+echo "🦔 > Precompressing static assets"
+node precompress.mjs dist/frontend/.next/static
+# Lets a reverse proxy resolve the public asset prefix (/_next) directly to
+# the build output so it can serve the precompressed files from disk.
+ln -sfn .next dist/frontend/_next
+
 echo "🦔 > Done! You can run the build by going into the dist directory and executing \`node frontend/server.js\`"
